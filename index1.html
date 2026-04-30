@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Coin Change Algorithms</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Syne:wght@400;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --surface: #12121a;
+      --card: #1a1a26;
+      --border: #2a2a3e;
+      --accent: #f0c040;
+      --accent2: #40c0f0;
+      --accent3: #f06080;
+      --text: #e8e8f0;
+      --muted: #7070a0;
+      --mono: 'Share Tech Mono', monospace;
+      --sans: 'Syne', sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      min-height: 100vh;
+      padding: 40px 20px;
+      background-image:
+        radial-gradient(ellipse at 20% 10%, rgba(240,192,64,0.06) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 90%, rgba(64,192,240,0.05) 0%, transparent 50%);
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 48px;
+      animation: fadeDown 0.7s ease both;
+    }
+
+    header .label {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 4px;
+      color: var(--accent);
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    header h1 {
+      font-size: clamp(28px, 6vw, 52px);
+      font-weight: 800;
+      letter-spacing: -1px;
+      line-height: 1.1;
+    }
+
+    header h1 span { color: var(--accent); }
+
+    header p {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 14px;
+      font-family: var(--mono);
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    /* Input Panel */
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      animation: fadeUp 0.6s ease both;
+    }
+
+    .panel-title {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 3px;
+      color: var(--accent);
+      text-transform: uppercase;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .panel-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .inputs-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      align-items: flex-end;
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex: 1;
+      min-width: 160px;
+    }
+
+    label {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 1px;
+    }
+
+    input {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 14px;
+      padding: 10px 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input:focus { border-color: var(--accent); }
+
+    .run-btn {
+      background: var(--accent);
+      color: #0a0a0f;
+      border: none;
+      border-radius: 8px;
+      font-family: var(--sans);
+      font-weight: 700;
+      font-size: 14px;
+      padding: 11px 28px;
+      cursor: pointer;
+      letter-spacing: 1px;
+      transition: transform 0.15s, box-shadow 0.15s;
+      white-space: nowrap;
+    }
+
+    .run-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 24px rgba(240,192,64,0.3);
+    }
+
+    .run-btn:active { transform: translateY(0); }
+
+    /* Results Grid */
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      animation: fadeUp 0.7s 0.1s ease both;
+    }
+
+    .result-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.3s, transform 0.3s;
+    }
+
+    .result-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      border-radius: 14px 14px 0 0;
+    }
+
+    .result-card.greedy::before { background: var(--accent3); }
+    .result-card.dp::before     { background: var(--accent2); }
+    .result-card.hybrid::before { background: var(--accent); }
+
+    .result-card.best {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(240,192,64,0.12);
+    }
+
+    .result-card .algo-name {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 3px;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .result-card .algo-value {
+      font-size: 42px;
+      font-weight: 800;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .result-card.greedy .algo-value { color: var(--accent3); }
+    .result-card.dp .algo-value     { color: var(--accent2); }
+    .result-card.hybrid .algo-value { color: var(--accent); }
+
+    .result-card .algo-sub {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .best-badge {
+      display: inline-block;
+      background: rgba(240,192,64,0.15);
+      color: var(--accent);
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 2px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      margin-top: 8px;
+    }
+
+    /* Steps Visualization */
+    .steps-panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      animation: fadeUp 0.7s 0.2s ease both;
+    }
+
+    .steps-section { margin-bottom: 24px; }
+    .steps-section:last-child { margin-bottom: 0; }
+
+    .steps-label {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .coin-track {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .coin {
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 700;
+      border: 2px solid;
+      animation: coinPop 0.3s ease both;
+    }
+
+    .coin.greedy { background: rgba(240,96,128,0.12); border-color: var(--accent3); color: var(--accent3); }
+    .coin.dp     { background: rgba(64,192,240,0.12); border-color: var(--accent2); color: var(--accent2); }
+
+    .arrow {
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 12px;
+    }
+
+    .remainder {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted);
+      margin-left: 4px;
+    }
+
+    /* DP Table */
+    .dp-table-wrap {
+      overflow-x: auto;
+    }
+
+    .dp-table {
+      border-collapse: collapse;
+      font-family: var(--mono);
+      font-size: 12px;
+      min-width: 100%;
+    }
+
+    .dp-table th {
+      background: var(--surface);
+      color: var(--muted);
+      padding: 8px 12px;
+      text-align: center;
+      border: 1px solid var(--border);
+      font-size: 10px;
+      letter-spacing: 1px;
+    }
+
+    .dp-table td {
+      padding: 8px 12px;
+      text-align: center;
+      border: 1px solid var(--border);
+      color: var(--text);
+      transition: background 0.2s;
+    }
+
+    .dp-table td.highlight {
+      background: rgba(240,192,64,0.15);
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    .dp-table td.inf { color: var(--muted); }
+
+    /* Time Complexity Panel */
+    .tc-panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+    }
+
+    .tc-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .tc-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .tc-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .tc-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+
+    .tc-algo {
+      font-family: var(--sans);
+      font-weight: 700;
+      font-size: 13px;
+      color: var(--text);
+    }
+
+    .tc-rows { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+
+    .tc-row {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .tc-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted);
+      min-width: 80px;
+      letter-spacing: 0.5px;
+    }
+
+    .tc-val {
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .tc-note {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted);
+    }
+
+    .total-row {
+      border-top: 1px solid var(--border);
+      padding-top: 10px;
+      margin-top: 2px;
+    }
+
+    .total-row .tc-label { color: var(--text); font-weight: 700; }
+
+    .tc-verdict {
+      font-family: var(--mono);
+      font-size: 11px;
+      padding: 6px 10px;
+      border-radius: 6px;
+      letter-spacing: 0.5px;
+    }
+
+    .tc-verdict.good { background: rgba(64,208,128,0.1); color: #40d080; }
+    .tc-verdict.warn { background: rgba(240,96,128,0.1); color: var(--accent3); }
+
+    .tc-legend {
+      display: flex;
+      gap: 24px;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      padding-top: 16px;
+      flex-wrap: wrap;
+    }
+
+    .tc-legend b { color: var(--accent); }
+
+    /* DP table pagination */
+    .dp-page-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .dp-page-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 12px;
+      padding: 6px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .dp-page-btn:hover { border-color: var(--accent); background: var(--card); }
+    .dp-page-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+    .dp-page-info {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    /* Error message */
+    .error-msg {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--accent3);
+      padding: 8px 0;
+    }
+
+    /* Animations */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes coinPop {
+      from { opacity: 0; transform: scale(0.5); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="label">Algorithm Visualizer</div>
+  <h1>Coin Change <span>Algorithms</span></h1>
+  <p>Greedy · Dynamic Programming · Hybrid</p>
+</header>
+
+<div class="container">
+
+  <!-- Input Panel -->
+  <div class="panel">
+    <div class="panel-title">Configuration</div>
+    <div class="inputs-row">
+      <div class="input-group">
+        <label>Coin Denominations (comma separated)</label>
+        <input type="text" id="coinsInput" value="1, 3, 4" placeholder="e.g. 1, 3, 4"/>
+      </div>
+      <div class="input-group" style="max-width:160px">
+        <label>Target Amount</label>
+        <input type="number" id="amountInput" value="6" min="0" max="9999"/>
+      </div>
+      <button class="run-btn" onclick="runAll()">▶ RUN</button>
+    </div>
+  </div>
+
+  <!-- Result Cards -->
+  <div class="results-grid" id="resultsGrid">
+    <div class="result-card greedy" id="cardGreedy">
+      <div class="algo-name">Greedy</div>
+      <div class="algo-value" id="valGreedy">—</div>
+      <div class="algo-sub">coins used</div>
+    </div>
+    <div class="result-card dp" id="cardDP">
+      <div class="algo-name">Dynamic Programming</div>
+      <div class="algo-value" id="valDP">—</div>
+      <div class="algo-sub">coins used</div>
+    </div>
+    <div class="result-card hybrid" id="cardHybrid">
+      <div class="algo-name">Hybrid (min of both)</div>
+      <div class="algo-value" id="valHybrid">—</div>
+      <div class="algo-sub">coins used</div>
+    </div>
+  </div>
+
+  <!-- Steps Visualization -->
+  <div class="steps-panel" id="stepsPanel">
+    <div class="panel-title">Step-by-step Trace</div>
+
+    <div class="steps-section">
+      <div class="steps-label">Greedy Steps</div>
+      <div class="coin-track" id="greedySteps"><span class="error-msg">Run the algorithm to see steps.</span></div>
+    </div>
+
+    <div class="steps-section">
+      <div class="steps-label">DP Optimal Steps</div>
+      <div class="coin-track" id="dpSteps"><span class="error-msg">Run the algorithm to see steps.</span></div>
+    </div>
+
+    <div class="steps-section">
+      <div class="panel-title" style="margin-bottom:12px">DP Table</div>
+      <div class="dp-table-wrap" id="dpTableWrap"></div>
+    </div>
+  </div>
+
+  <!-- Time Complexity Panel -->
+  <div class="tc-panel" style="animation: fadeUp 0.7s 0.3s ease both;">
+    <div class="panel-title">Time &amp; Space Complexity</div>
+    <div class="tc-grid">
+
+      <div class="tc-card greedy-tc">
+        <div class="tc-header">
+          <span class="tc-dot" style="background:var(--accent3)"></span>
+          <span class="tc-algo">Greedy</span>
+        </div>
+        <div class="tc-rows">
+          <div class="tc-row">
+            <span class="tc-label">Sort</span>
+            <span class="tc-val" style="color:var(--accent3)">O(n²)</span>
+            <span class="tc-note">bubble sort on n coins</span>
+          </div>
+          <div class="tc-row">
+            <span class="tc-label">Selection</span>
+            <span class="tc-val" style="color:var(--accent3)">O(n · A)</span>
+            <span class="tc-note">n coins × amount A</span>
+          </div>
+          <div class="tc-row total-row">
+            <span class="tc-label">Total Time</span>
+            <span class="tc-val" style="color:var(--accent3)">O(n² + n·A)</span>
+          </div>
+          <div class="tc-row">
+            <span class="tc-label">Space</span>
+            <span class="tc-val" style="color:var(--accent3)">O(1)</span>
+            <span class="tc-note">in-place, no extra array</span>
+          </div>
+        </div>
+        <div class="tc-verdict warn">⚠ Not always optimal</div>
+      </div>
+
+      <div class="tc-card dp-tc">
+        <div class="tc-header">
+          <span class="tc-dot" style="background:var(--accent2)"></span>
+          <span class="tc-algo">Dynamic Programming</span>
+        </div>
+        <div class="tc-rows">
+          <div class="tc-row">
+            <span class="tc-label">Fill DP table</span>
+            <span class="tc-val" style="color:var(--accent2)">O(n · A)</span>
+            <span class="tc-note">n coins × amount A</span>
+          </div>
+          <div class="tc-row">
+            <span class="tc-label">Trace back</span>
+            <span class="tc-val" style="color:var(--accent2)">O(A)</span>
+            <span class="tc-note">reconstruct solution</span>
+          </div>
+          <div class="tc-row total-row">
+            <span class="tc-label">Total Time</span>
+            <span class="tc-val" style="color:var(--accent2)">O(n · A)</span>
+          </div>
+          <div class="tc-row">
+            <span class="tc-label">Space</span>
+            <span class="tc-val" style="color:var(--accent2)">O(A)</span>
+            <span class="tc-note">dp[ ] array of size A+1</span>
+          </div>
+        </div>
+        <div class="tc-verdict good">✔ Always optimal</div>
+      </div>
+
+      <div class="tc-card hybrid-tc">
+        <div class="tc-header">
+          <span class="tc-dot" style="background:var(--accent)"></span>
+          <span class="tc-algo">Hybrid</span>
+        </div>
+        <div class="tc-rows">
+          <div class="tc-row">
+            <span class="tc-label">Runs both</span>
+            <span class="tc-val" style="color:var(--accent)">Greedy + DP</span>
+            <span class="tc-note">then picks minimum</span>
+          </div>
+          <div class="tc-row total-row">
+            <span class="tc-label">Total Time</span>
+            <span class="tc-val" style="color:var(--accent)">O(n · A)</span>
+            <span class="tc-note">DP dominates</span>
+          </div>
+          <div class="tc-row">
+            <span class="tc-label">Space</span>
+            <span class="tc-val" style="color:var(--accent)">O(A)</span>
+            <span class="tc-note">from DP table</span>
+          </div>
+        </div>
+        <div class="tc-verdict good">✔ Always optimal result</div>
+      </div>
+
+    </div>
+
+    <!-- Legend -->
+    <div class="tc-legend">
+      <span><b>n</b> = number of coin denominations</span>
+      <span><b>A</b> = target amount</span>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const INF = Infinity;
+
+function parseCoins(str) {
+  return str.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n) && n > 0);
+}
+
+function sortDesc(arr) { return [...arr].sort((a, b) => b - a); }
+
+function greedyTrace(coins, amount) {
+  const sorted = sortDesc(coins);
+  const used = [];
+  let rem = amount;
+  for (const c of sorted) {
+    while (rem >= c) { used.push(c); rem -= c; }
+  }
+  return rem === 0 ? { count: used.length, coins: used } : { count: INF, coins: [] };
+}
+
+function dpSolve(coins, amount) {
+  const dp = new Array(amount + 1).fill(INF);
+  const from = new Array(amount + 1).fill(-1);
+  dp[0] = 0;
+  for (let i = 1; i <= amount; i++) {
+    for (const c of coins) {
+      if (c <= i && dp[i - c] !== INF) {
+        if (dp[i] > dp[i - c] + 1) { dp[i] = dp[i - c] + 1; from[i] = c; }
+      }
+    }
+  }
+  const used = [];
+  let cur = amount;
+  while (cur > 0 && from[cur] !== -1) { used.push(from[cur]); cur -= from[cur]; }
+  return { count: dp[amount], coins: used, table: dp };
+}
+
+function renderCoinTrack(container, coinsUsed, type) {
+  container.innerHTML = '';
+  if (!coinsUsed.length) {
+    container.innerHTML = '<span class="error-msg">No solution found (impossible to make that amount).</span>';
+    return;
+  }
+  let rem = coinsUsed.reduce((a, b) => a + b, 0);
+  coinsUsed.forEach((c, i) => {
+    const el = document.createElement('div');
+    el.className = `coin ${type}`;
+    el.style.animationDelay = `${i * 60}ms`;
+    el.textContent = c;
+    container.appendChild(el);
+    rem -= c;
+    if (i < coinsUsed.length - 1) {
+      const arr = document.createElement('span');
+      arr.className = 'arrow';
+      arr.textContent = '+';
+      container.appendChild(arr);
+    }
+  });
+  const eq = document.createElement('span');
+  eq.className = 'remainder';
+  eq.textContent = `= ${coinsUsed.reduce((a,b)=>a+b,0)}  (${coinsUsed.length} coin${coinsUsed.length!==1?'s':''})`;
+  container.appendChild(eq);
+}
+
+const PAGE_SIZE = 20; // columns per page
+let dpTableData = { table: [], amount: 0, page: 0 };
+
+function renderDPTable(container, table, amount) {
+  dpTableData = { table, amount, page: 0 };
+  renderDPPage(container);
+}
+
+function renderDPPage(container) {
+  const { table, amount, page } = dpTableData;
+  const totalPages = Math.ceil((amount + 1) / PAGE_SIZE);
+  const start = page * PAGE_SIZE;
+  const end = Math.min(start + PAGE_SIZE, amount + 1);
+
+  let html = '';
+
+  // Pagination controls
+  html += `<div class="dp-page-controls">
+    <button class="dp-page-btn" id="dpPrev" ${page === 0 ? 'disabled' : ''} onclick="changeDPPage(-1)">◀ Prev</button>
+    <span class="dp-page-info">Showing amounts ${start}–${end - 1} of ${amount} &nbsp;|&nbsp; Page ${page + 1} / ${totalPages}</span>
+    <button class="dp-page-btn" id="dpNext" ${page >= totalPages - 1 ? 'disabled' : ''} onclick="changeDPPage(1)">Next ▶</button>
+  </div>`;
+
+  html += '<div class="dp-table-wrap"><table class="dp-table"><thead><tr><th>Amount</th>';
+  for (let i = start; i < end; i++) html += `<th>${i}</th>`;
+  html += '</tr></thead><tbody><tr><th>Min Coins</th>';
+  for (let i = start; i < end; i++) {
+    const cls = i === amount ? 'highlight' : table[i] === INF ? 'inf' : '';
+    html += `<td class="${cls}">${table[i] === INF ? '∞' : table[i]}</td>`;
+  }
+  html += '</tr></tbody></table></div>';
+
+  container.innerHTML = html;
+}
+
+function changeDPPage(delta) {
+  const { table, amount } = dpTableData;
+  const totalPages = Math.ceil((amount + 1) / PAGE_SIZE);
+  dpTableData.page = Math.max(0, Math.min(dpTableData.page + delta, totalPages - 1));
+  renderDPPage(document.getElementById('dpTableWrap'));
+}
+
+function runAll() {
+  const coinsRaw = document.getElementById('coinsInput').value;
+  const amount = parseInt(document.getElementById('amountInput').value);
+  const coins = parseCoins(coinsRaw);
+
+  if (!coins.length || isNaN(amount) || amount < 0) {
+    alert('Please enter valid coins and amount.');
+    return;
+  }
+
+  const gr = greedyTrace(coins, amount);
+  const dp = dpSolve(coins, amount);
+  const hybridCount = Math.min(gr.count === INF ? Infinity : gr.count, dp.count === INF ? Infinity : dp.count);
+
+  // Update cards
+  ['cardGreedy','cardDP','cardHybrid'].forEach(id => {
+    document.getElementById(id).classList.remove('best');
+    const badge = document.getElementById(id).querySelector('.best-badge');
+    if (badge) badge.remove();
+  });
+
+  const fmt = v => v === INF || v === Infinity ? '∞' : v;
+  document.getElementById('valGreedy').textContent = fmt(gr.count);
+  document.getElementById('valDP').textContent = fmt(dp.count);
+  document.getElementById('valHybrid').textContent = fmt(hybridCount);
+
+  // Highlight best
+  const bestId = hybridCount === Infinity ? null :
+    (gr.count === hybridCount && gr.count <= dp.count) ? 'cardGreedy' :
+    dp.count === hybridCount ? 'cardDP' : 'cardHybrid';
+
+  if (bestId) {
+    const card = document.getElementById(bestId);
+    card.classList.add('best');
+    const b = document.createElement('div');
+    b.className = 'best-badge';
+    b.textContent = '✦ OPTIMAL';
+    card.appendChild(b);
+  }
+
+  // Steps
+  renderCoinTrack(document.getElementById('greedySteps'), gr.coins, 'greedy');
+  renderCoinTrack(document.getElementById('dpSteps'), dp.coins, 'dp');
+  renderDPTable(document.getElementById('dpTableWrap'), dp.table, amount);
+}
+
+// Run on load with defaults
+window.onload = runAll;
+</script>
+</body>
+</html>
