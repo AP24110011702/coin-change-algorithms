@@ -1,0 +1,178 @@
+📘 Coin Change Problem using Greedy, Dynamic Programming & Hybrid Approach
+1. Abstract
+
+The Coin Change Problem is a classic optimization problem in computer science that focuses on finding the minimum number of coins required to make a given amount using a set of coin denominations.
+
+This project implements three different approaches — Greedy, Dynamic Programming (DP), and a Hybrid approach — to compare their efficiency and correctness. While the Greedy method provides faster solutions, it may fail to produce optimal results for certain inputs. Dynamic Programming guarantees optimality but at a higher computational cost.
+
+The Hybrid approach combines the advantages of both methods to ensure correctness while maintaining efficiency. The project also includes an interactive visualization tool to enhance understanding.
+
+2. Introduction
+
+Optimization problems are fundamental in algorithm design, and the Coin Change Problem is one of the most widely studied examples. It has real-world applications in areas such as financial systems, vending machines, and resource allocation.
+
+This project demonstrates how different algorithmic strategies behave under the same problem conditions. It highlights the importance of choosing the right approach depending on constraints like time complexity and correctness.
+
+3. Problem Statement
+
+Given:
+
+A set of coin denominations
+A target amount
+
+Determine:
+
+The minimum number of coins required to make the target amount
+Challenges:
+Greedy does not always give optimal results
+Brute force is inefficient
+Need for a balance between speed and accuracy
+
+4. Objectives
+To implement the Coin Change Problem in C++
+To compare Greedy and Dynamic Programming approaches
+To design a Hybrid approach for optimal performance
+To provide input validation for robustness
+To visualize the solution using a web interface
+
+5. Proposed System
+
+The system performs the following steps:
+
+Accept user input (coin denominations and target amount)
+Validate the input
+Apply:
+Greedy Algorithm
+Dynamic Programming
+Hybrid Approach
+Display results for comparison
+Provide visualization through a browser interface
+
+6. Methodology
+
+The project follows a structured approach:
+
+Input collection
+Input validation
+Sorting of coin denominations
+Execution of algorithms
+Comparison of results
+Output display
+
+7. System Architecture
+User Input → Validation → Algorithm Execution → Result Comparison → Output Display
+
+8. Project Implementation
+📁 Project Files
+File	Description
+coin_code.cpp	Main C++ source file with input validation
+coin_change.html	Interactive browser visualizer
+README.md	Documentation file
+🚀 Compile & Run (Windows PowerShell)
+Step 1 — Compile
+g++ coin_code.cpp -o coin_code.exe
+Step 2 — Run
+.\coin_code.exe
+
+⚠️ Always use .\coin_code.exe in PowerShell.
+
+🖥️ Sample Run
+Enter number of coin denominations: 3
+Enter 3 coin denominations (space separated): 1 3 4
+Enter target amount: 6
+
+Coins : 1 3 4
+Amount: 6
+
+Greedy result : 2 coins
+DP     result : 2 coins
+Hybrid result : 2 coins
+⌨️ Input Rules
+Rule	✅ Correct	❌ Wrong
+Separate coins with spaces	1 3 4	1,3,4
+Enter count as single number	3	2,3
+Only positive integers	1 5 10	-1 0 5
+Amount must be non-negative	6	-2
+
+9. Algorithms Used
+1. Greedy Algorithm
+
+Selects the largest denomination first and continues until the amount becomes zero.
+
+Sort coins in descending order
+Pick largest coin ≤ amount
+Repeat until amount = 0
+
+Limitation: Does not guarantee optimal solution.
+
+2. Dynamic Programming (DP)
+
+Uses a bottom-up approach to compute the minimum coins required.
+
+dp[0] = 0
+For each amount:
+    dp[i] = min(dp[i], dp[i - coin] + 1)
+
+✔ Always produces optimal result
+
+3. Hybrid Approach
+
+Combines Greedy and DP:
+
+hybrid = min(greedy_result, dp_result)
+
+✔ Ensures correctness
+✔ Improves efficiency
+
+⏱️ Time & Space Complexity
+Algorithm	Time Complexity	Space Complexity	Optimal
+Greedy	O(n log n + n·A)	O(1)	No
+DP	O(n·A)	O(A)	Yes
+Hybrid	O(n·A)	O(A)	Yes
+🔢 DP Table Example
+
+Input: Coins = {1, 3, 4}, Amount = 6
+
+Amount	0	1	2	3	4	5	6
+Min Coins	0	1	2	1	1	2	2
+
+Traceback:
+6 → 3 → 3 → 0
+
+Final Answer: 2 coins
+
+10. Features
+Input validation (no crashes)
+Multiple algorithm comparison
+Optimal solution guarantee
+Interactive visualization
+Easy-to-understand output
+
+11. Advantages
+Demonstrates algorithm efficiency clearly
+Helps in learning optimization techniques
+Practical implementation of DP
+User-friendly design
+
+12. Applications
+Currency systems
+Vending machines
+ATM software
+Resource optimization problems
+
+13. Limitations
+DP uses extra memory
+Greedy fails for non-standard coin systems
+Performance depends on input size
+
+14. Future Scope
+Add more algorithms (Backtracking, BFS)
+Improve UI visualization
+Extend to multi-currency systems
+Convert into mobile/web application
+
+15. Conclusion
+
+This project successfully demonstrates different approaches to solving the Coin Change Problem. While the Greedy method is fast, it is not always reliable. Dynamic Programming ensures correctness, and the Hybrid approach combines both advantages.
+
+The project provides both theoretical understanding and practical implementation, making it a valuable learning tool for algorithm design.
